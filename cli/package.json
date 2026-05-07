@@ -1,0 +1,48 @@
+{
+  "name": "hyper-search",
+  "version": "0.1.0",
+  "description": "Unified web search across multiple providers — for coding agents",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "hyper-search": "./bin/hyper-search"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "bundle": "esbuild dist/cli.js --bundle --platform=node --format=esm --outfile=../scripts/cli.js && chmod +x ../scripts/cli.js",
+    "check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "web-search",
+    "search",
+    "brave",
+    "duckduckgo",
+    "exa",
+    "perplexity",
+    "tavily",
+    "ai-agents",
+    "claude"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.0"
+  }
+}
