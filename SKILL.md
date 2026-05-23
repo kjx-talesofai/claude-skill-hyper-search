@@ -1,6 +1,6 @@
 ---
 name: hyper-search
-description: Unified web search across multiple providers with automatic fallback. Use when the user asks to search the web, look up current information, verify facts, find recent news, or research topics. Supports provider selection, freshness filtering, domain filtering, and multi-provider blending for broader coverage. 
+description: Web search across multiple providers with auto-fallback. Triggers: search web, look up, verify.
 ---
 
 # Hyper Search
