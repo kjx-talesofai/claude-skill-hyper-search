@@ -1,6 +1,6 @@
 ---
 name: hyper-search
-description: Web search across multiple providers with auto-fallback. Triggers: search web, look up, verify.
+description: "Web search across multiple providers with auto-fallback. Triggers: search web, look up, verify."
 ---
 
 # Hyper Search
