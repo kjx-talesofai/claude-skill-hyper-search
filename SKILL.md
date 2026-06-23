@@ -89,21 +89,28 @@ Best combinations:
 The `weixin-search` provider searches WeChat Official Account (微信公众号) articles via Sogou.
 Results include Sogou redirect links (`weixin.sogou.com/link?url=...`).
 
-**To fetch full article content from a Sogou link, use the media-fetcher skill:**
+If the sandbox encounters rate-limiting, set `MEDIA_FETCH_PROXY_URL` to route through a proxy.
+
+**Client-side sorting:** Sogou API returns results in non-deterministic order. When
+`--freshness`, `--date-after`, or `--date-before` is specified, results are sorted by
+date descending (newest first) on the client side.
+
+**To fetch full article content from a Sogou link, use the media-fetcher skill**
+(install from [kjx-talesofai/claude-skill-media-fetcher](https://github.com/kjx-talesofai/claude-skill-media-fetcher)):
 
 ```bash
 # Step 1: Search
-node scripts/cli.js search "网信上海 清朗 通知" --provider weixin-search --count 3
+node scripts/cli.js search "上海 网络 通知" --provider weixin-search --count 3 --freshness month
 
-# Step 2: Fetch — media-fetcher handles Sogou link resolution automatically
-python3 /workspace/.agents/skills/media-fetcher/scripts/fetch.py "https://weixin.sogou.com/link?url=..."
+# Step 2: Fetch (if media-fetcher installed)
+python3 path/to/media-fetcher/scripts/fetch.py "https://weixin.sogou.com/link?url=..."
 ```
 
 The media-fetcher wechat adapter will:
-1. Search Sogou to establish session (requires Chrome on :9222)
-2. Click the article link → follow CAPTCHA redirect
-3. Extract real WeChat URL → fetch via weixinbridge Referer
-4. Return full article: title, author, text, images
+1. Search Sogou to establish session
+2. Click the article link → follow redirect
+3. Extract real WeChat URL → fetch full content
+4. Return: title, author, text, images
 
 This is a one-step operation from the caller's perspective — just pass the Sogou link to media-fetcher.
 

@@ -999,27 +999,39 @@ var WX_SEARCH_URL = "https://weixin.sogou.com/weixinjs";
 var WeixinSearchProvider = class extends BaseProvider {
   id = "weixin-search";
   label = "WeChat Articles";
-  hint = "Search WeChat Official Account (\u5FAE\u4FE1\u516C\u4F17\u53F7) articles via Sogou. Returns title, source account, date, and snippet. Free, no key.";
+  hint = "Search WeChat Official Account (\u5FAE\u4FE1\u516C\u4F17\u53F7) articles via Sogou. Returns title, source account, date, and snippet. Free, no key. Set MEDIA_FETCH_PROXY_URL to route requests through a proxy if needed.";
   requiresCredential = false;
-  envVars = [];
+  envVars = ["MEDIA_FETCH_PROXY_URL"];
   autoDetectOrder = 90;
-  supportedParams = ["query", "count"];
+  supportedParams = ["query", "count", "freshness", "dateAfter", "dateBefore"];
   async execute(args) {
     const query = args.query;
     const count = args.count ?? 5;
     const maxPages = Math.ceil(count / 10);
     const items = [];
+    const proxyUrl = process.env.MEDIA_FETCH_PROXY_URL?.trim() || "";
     for (let page = 1; page <= maxPages; page++) {
-      const url = new URL(WX_SEARCH_URL);
-      url.searchParams.set("type", "2");
-      url.searchParams.set("query", query);
-      url.searchParams.set("page", String(page));
-      const response = await fetch(url.toString(), {
-        headers: {
+      const sogouUrl = new URL(WX_SEARCH_URL);
+      sogouUrl.searchParams.set("type", "2");
+      sogouUrl.searchParams.set("query", query);
+      sogouUrl.searchParams.set("page", String(page));
+      let fetchUrl;
+      let fetchHeaders;
+      if (proxyUrl) {
+        fetchUrl = `${proxyUrl.replace(/\/$/, "")}/proxy?url=${encodeURIComponent(sogouUrl.toString())}&referer=${encodeURIComponent("https://weixin.sogou.com/")}`;
+        fetchHeaders = {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+        };
+      } else {
+        fetchUrl = sogouUrl.toString();
+        fetchHeaders = {
           "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
           "Accept": "text/html,application/xhtml+xml",
           "Accept-Language": "zh-CN,zh;q=0.9"
-        },
+        };
+      }
+      const response = await fetch(fetchUrl, {
+        headers: fetchHeaders,
         signal: args.signal
       });
       await this.throwOnHttpError(response);
@@ -1042,6 +1054,13 @@ var WeixinSearchProvider = class extends BaseProvider {
       }
       if (data.totalPages <= page)
         break;
+    }
+    if (args.freshness || args.dateAfter || args.dateBefore) {
+      items.sort((a, b) => {
+        const da = this.parseDate(a.date);
+        const db = this.parseDate(b.date);
+        return db - da;
+      });
     }
     const results = items.slice(0, count).map(this.toSearchItem);
     return {
@@ -1072,6 +1091,14 @@ var WeixinSearchProvider = class extends BaseProvider {
       summary: get("content168") || get("content68") || get("content50") || "",
       headImage: get("imglink") || get("headimage") || ""
     };
+  }
+  /** Parse Chinese date strings like "2026-3-25" or "2026年3月25日" to Unix ms. */
+  parseDate(dateStr) {
+    if (!dateStr)
+      return 0;
+    const cleaned = dateStr.replace(/[年月]/g, "-").replace(/日/g, "");
+    const parsed = Date.parse(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
   }
   toSearchItem(item) {
     return {
