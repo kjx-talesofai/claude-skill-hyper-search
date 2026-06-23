@@ -30,6 +30,7 @@ Quick defaults:
 - **Rich research context:** Exa (~1500 tokens, dates + authors)
 - **Token-constrained:** Firecrawl (~360 tokens) or DuckDuckGo (free, no key)
 - **Current events:** Tavily or Exa with `--freshness`
+- **WeChat articles:** `weixin-search` — 搜狗微信搜索，免费无需 key，返回公众号文章标题、日期、来源、摘要
 
 ## Common patterns
 
@@ -57,7 +58,7 @@ node scripts/cli.js search "query" --domain-filter nytimes.com,bbc.com
 
 | Parameter | Description | Example |
 |-----------|-------------|---------|
-| `--provider <id>` | Provider to use | `exa`, `tavily`, `serpapi`, `firecrawl`, `duckduckgo` |
+| `--provider <id>` | Provider to use | `exa`, `tavily`, `serpapi`, `firecrawl`, `duckduckgo`, `weixin-search` |
 | `--count <n>` | Number of results (1–10, default 5) | `--count 5` |
 | `--freshness <period>` | day, week, month, or year | `--freshness week` |
 | `--date-after <date>` | YYYY-MM-DD | `--date-after 2024-01-01` |
@@ -82,6 +83,29 @@ Best combinations:
 - **Research:** `exa,serpapi` — rich context + speed
 - **News/current events:** `tavily,exa,serpapi` — freshness + depth + coverage
 - **Token budget:** `firecrawl,duckduckgo` — minimal context, zero cost
+
+## WeChat article search + fetch
+
+The `weixin-search` provider searches WeChat Official Account (微信公众号) articles via Sogou.
+Results include Sogou redirect links (`weixin.sogou.com/link?url=...`).
+
+**To fetch full article content from a Sogou link, use the media-fetcher skill:**
+
+```bash
+# Step 1: Search
+node scripts/cli.js search "网信上海 清朗 通知" --provider weixin-search --count 3
+
+# Step 2: Fetch — media-fetcher handles Sogou link resolution automatically
+python3 /workspace/.agents/skills/media-fetcher/scripts/fetch.py "https://weixin.sogou.com/link?url=..."
+```
+
+The media-fetcher wechat adapter will:
+1. Search Sogou to establish session (requires Chrome on :9222)
+2. Click the article link → follow CAPTCHA redirect
+3. Extract real WeChat URL → fetch via weixinbridge Referer
+4. Return full article: title, author, text, images
+
+This is a one-step operation from the caller's perspective — just pass the Sogou link to media-fetcher.
 
 ## Scripts
 
