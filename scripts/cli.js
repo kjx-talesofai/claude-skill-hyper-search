@@ -252,7 +252,7 @@ var SearchEngine = class {
   }
   getConfiguredProviders() {
     if (!this.configuredProviders) {
-      this.configuredProviders = Array.from(this.providers.values()).filter((p) => isProviderConfigured(p.id, this.config.providers[p.id] ?? {}, p.requiresCredential)).sort((a, b) => (a.autoDetectOrder ?? 999) - (b.autoDetectOrder ?? 999));
+      this.configuredProviders = Array.from(this.providers.values()).filter((p) => p.autoDetect !== false).filter((p) => isProviderConfigured(p.id, this.config.providers[p.id] ?? {}, p.requiresCredential)).sort((a, b) => (a.autoDetectOrder ?? 999) - (b.autoDetectOrder ?? 999));
     }
     return this.configuredProviders;
   }
@@ -1002,7 +1002,8 @@ var WeixinSearchProvider = class extends BaseProvider {
   hint = "Search WeChat Official Account (\u5FAE\u4FE1\u516C\u4F17\u53F7) articles via Sogou. Returns title, source account, date, and snippet. Free, no key. Set MEDIA_FETCH_PROXY_URL to route requests through a proxy if needed.";
   requiresCredential = false;
   envVars = ["MEDIA_FETCH_PROXY_URL"];
-  autoDetectOrder = 90;
+  autoDetect = false;
+  autoDetectOrder = 110;
   supportedParams = ["query", "count", "freshness", "dateAfter", "dateBefore"];
   async execute(args) {
     const query = args.query;

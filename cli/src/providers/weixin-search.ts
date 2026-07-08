@@ -10,7 +10,8 @@ export class WeixinSearchProvider extends BaseProvider {
   hint = "Search WeChat Official Account (微信公众号) articles via Sogou. Returns title, source account, date, and snippet. Free, no key. Set MEDIA_FETCH_PROXY_URL to route requests through a proxy if needed.";
   requiresCredential = false;
   envVars: string[] = ["MEDIA_FETCH_PROXY_URL"];
-  autoDetectOrder = 90;
+  autoDetect = false;
+  autoDetectOrder = 110;
   supportedParams: SearchParam[] = ["query", "count", "freshness", "dateAfter", "dateBefore"];
 
   async execute(args: SearchArgs): Promise<SearchResult> {

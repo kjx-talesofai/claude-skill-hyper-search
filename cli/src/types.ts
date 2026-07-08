@@ -67,6 +67,7 @@ export interface SearchProvider {
   requiresCredential: boolean;
   envVars: string[];
   autoDetectOrder: number;
+  autoDetect?: boolean;
   supportedParams: SearchParam[];
   execute(args: SearchArgs, config: ProviderConfig): Promise<SearchResult>;
 }

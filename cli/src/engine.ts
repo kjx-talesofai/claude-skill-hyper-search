@@ -44,6 +44,7 @@ export class SearchEngine {
   private getConfiguredProviders(): SearchProvider[] {
     if (!this.configuredProviders) {
       this.configuredProviders = Array.from(this.providers.values())
+        .filter(p => p.autoDetect !== false)
         .filter(p => isProviderConfigured(p.id, this.config.providers[p.id] ?? {}, p.requiresCredential))
         .sort((a, b) => (a.autoDetectOrder ?? 999) - (b.autoDetectOrder ?? 999));
     }
